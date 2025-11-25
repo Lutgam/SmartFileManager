@@ -1,0 +1,9 @@
+.gitignore for .NET Core
+
+bin/
+obj/
+.vscode/
+.DS_Store
+*.user
+*.pdb
+*.suo
