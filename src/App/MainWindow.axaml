@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+        x:Class="App.MainWindow"
+        Title="Smart File Manager (Native Version)"
+        Background="#1e1e1e"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Grid ColumnDefinitions="300, *" RowDefinitions="50, *">
+        <!-- 頂部標題列 -->
+        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#252526" BorderBrush="#333" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0">
+                <TextBlock Text="📂 智慧檔案管家 (C# 原生核心版)" Foreground="White" FontWeight="Bold" FontSize="16"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 左側檔案列表 -->
+        <Border Grid.Row="1" Grid.Column="0" Background="#2d2d30" BorderBrush="#333" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <TextBlock Text="桌面檔案列表" Foreground="#aaa" Margin="10" DockPanel.Dock="Top" FontSize="12"/>
+                <ListBox Name="FileListBox" Background="Transparent" SelectionChanged="OnFileSelected">
+                    <ListBox.ItemTemplate>
+                        <!-- 關鍵修正：加入 x:CompileBindings="False" 讓它不要檢查型別 -->
+                        <DataTemplate x:CompileBindings="False">
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5">
+                                <TextBlock Text="📄" FontSize="16"/>
+                                <TextBlock Text="{Binding Name}" Foreground="White" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- 右側預覽區 -->
+        <Grid Grid.Row="1" Grid.Column="1" Background="#1e1e1e">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+                <!-- 圖片預覽框 -->
+                <Border CornerRadius="8" ClipToBounds="True" BoxShadow="0 10 30 0 #000000">
+                    <Image Name="PreviewImage" Height="400" Stretch="Uniform"/>
+                </Border>
+                <!-- 文字資訊 -->
+                <TextBlock Name="InfoText" Text="請從左側選擇一個圖片檔案 (.jpg / .png)" Foreground="#888" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
