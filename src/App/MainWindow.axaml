@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
         x:Class="App.MainWindow"
-        Title="Smart File Manager - Pro v0.9.1 Fixed" 
+        Title="Smart File Manager - v7.0 Apple Fix 🍎" 
         Background="#1e1e1e"
         TransparencyLevelHint="AcrylicBlur"
         ExtendClientAreaToDecorationsHint="True">
@@ -13,21 +13,25 @@
         <Grid RowDefinitions="60, *">
             <!-- 頂部功能列 -->
             <Border Grid.Row="0" Background="#252526" BorderBrush="#333" BorderThickness="0,0,0,1">
-                <Grid ColumnDefinitions="Auto, *, Auto" Margin="15,0">
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
-                        <StackPanel>
-                            <TextBlock Text="📂 智慧檔案管家" Foreground="White" FontWeight="Bold" FontSize="16"/>
-                            <TextBlock Text="v0.9.1 Final Fix" Foreground="#666" FontSize="10"/>
-                        </StackPanel>
+                <Grid>
+                    <!-- 左側：按鈕區 -->
+                    <StackPanel Orientation="Horizontal" Spacing="15" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="80,0,0,0">
                         <Button Name="SelectFolderBtn" Click="SelectFolder_Click" Background="#333" BorderBrush="#444" CornerRadius="5" Padding="10,5">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock Text="📂" />
-                                <TextBlock Name="CurrentPathText" Text="桌面 (Desktop)" Foreground="#ddd" MaxWidth="200" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Name="CurrentPathText" Text="桌面" Foreground="#ddd" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <!-- 中間：標題 -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False">
+                        <TextBlock Text="📂 智慧檔案管家 🍎" Foreground="White" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
+                        <TextBlock Text="v7.0 Final Complete" Foreground="#666" FontSize="10" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- 右側：AI -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,15,0">
                         <Button Click="AiTrash_Click" Background="#2d2d30" BorderBrush="#cc4444" BorderThickness="1" CornerRadius="20" Padding="15,8">
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="🗑️"/>
@@ -47,10 +51,9 @@
             <!-- 主內容分頁 -->
             <TabControl Grid.Row="1" Margin="0" Background="#1e1e1e" SelectionChanged="OnTabChanged">
                 
-                <!-- 1. 檔案列表 (主視圖) -->
+                <!-- 1. 檔案列表 -->
                 <TabItem Header="📋 檔案列表" FontSize="14" FontWeight="Bold">
                     <Grid ColumnDefinitions="320, *">
-                        <!-- 左側列表 -->
                         <Border Grid.Column="0" Background="#2d2d30" BorderBrush="#333" BorderThickness="0,0,1,0">
                             <DockPanel>
                                 <TextBlock Text="檔案清單" Foreground="#aaa" Margin="15,10" DockPanel.Dock="Top" FontSize="12" FontWeight="Bold"/>
@@ -83,7 +86,6 @@
                             </DockPanel>
                         </Border>
 
-                        <!-- 右側預覽區 -->
                         <Grid Grid.Column="1" Background="#1e1e1e">
                             <Border Margin="20" CornerRadius="8" Background="#252526" BoxShadow="0 4 20 0 #000000">
                                 <Grid RowDefinitions="*, Auto">
@@ -102,7 +104,6 @@
                                         <StackPanel Spacing="10">
                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                 <TextBlock Text="🏷️ 標籤:" VerticalAlignment="Center" Foreground="#aaa" Margin="0,0,5,0"/>
-                                                
                                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" MaxWidth="500">
                                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                                         <ItemsControl Name="QuickTagList">
@@ -122,8 +123,7 @@
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
-                                                        
-                                                        <Button Content="➕" Click="ShowCustomTagDialog" FontSize="12" Background="#333" BorderBrush="#555" BorderThickness="1"/>
+                                                        <Button Content="➕ 新增自訂標籤..." Click="ShowCustomTagDialog" FontSize="12" Background="#333" BorderBrush="#555" BorderThickness="1"/>
                                                     </StackPanel>
                                                 </ScrollViewer>
                                             </StackPanel>
@@ -191,54 +191,82 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
+                                    <Button Name="DetailOpenExternalBtn" Click="DetailOpenExternal_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Background="#3a3a3a" IsVisible="False">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="↗️" />
+                                            <TextBlock Text="開啟" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </Button>
                                 </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
                 </TabItem>
 
-                <!-- 3. 關聯視圖 (修正：移除 Transforms 的 x:Name) -->
+                <!-- 3. 關聯視圖 -->
                 <TabItem Header="🕸️ 關聯視圖" FontSize="14" FontWeight="Bold">
                     <Grid>
                         <Border Background="#121212" ClipToBounds="True" PointerWheelChanged="OnGraphScroll" PointerPressed="OnGraphContainerPressed" PointerMoved="OnGraphContainerMoved" PointerReleased="OnGraphContainerReleased">
-                            <!-- 變形容器 -->
                             <Panel Name="GraphContainer" Background="Transparent">
-                                <Panel.RenderTransform>
-                                    <!-- 修正重點：這裡不要給名字，因為編譯器可能會報錯 -->
-                                    <TransformGroup>
-                                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                                        <TranslateTransform X="0" Y="0" />
-                                    </TransformGroup>
-                                </Panel.RenderTransform>
                                 <Canvas Name="GraphCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Width="5000" Height="5000"/>
                             </Panel>
                         </Border>
                         
-                        <!-- 迷你標籤視窗 -->
-                        <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20" Width="220" Background="#252526" CornerRadius="12" BoxShadow="0 4 20 0 #000000" BorderBrush="#444" BorderThickness="1">
-                            <StackPanel>
-                                <Border Background="#333" CornerRadius="12,12,0,0" Padding="10">
-                                    <TextBlock Text="🏷️ 標籤庫 (點擊生成節點)" FontWeight="Bold" Foreground="#ddd" FontSize="12"/>
-                                </Border>
-                                <ScrollViewer Height="150">
-                                    <ItemsControl Name="MiniTagList" Margin="5">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:CompileBindings="False">
-                                                <Button Click="SpawnTagNode_Click" Tag="{Binding Name}" Margin="2" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0">
-                                                    <Grid ColumnDefinitions="30, *">
-                                                        <TextBlock Grid.Column="0" Text="{Binding Emoji}" VerticalAlignment="Center"/>
-                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{Binding Color}" FontWeight="Bold" VerticalAlignment="Center"/>
-                                                    </Grid>
-                                                </Button>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-                            </StackPanel>
+                        <Border Name="LinkModeHint" IsVisible="False" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20" Background="#aa2563eb" CornerRadius="20" Padding="15,8">
+                            <TextBlock Text="🔗 請點擊另一個節點以建立/取消連結" Foreground="White" FontWeight="Bold"/>
                         </Border>
 
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20" Spacing="10">
+                            <!-- 迷你標籤庫 -->
+                            <Border Width="240" Background="#252526" CornerRadius="12" BoxShadow="0 4 20 0 #000000" BorderBrush="#444" BorderThickness="1">
+                                <StackPanel>
+                                    <Border Background="#333" CornerRadius="12,12,0,0" Padding="10">
+                                        <TextBlock Text="🏷️ 標籤庫 (點左邊生成 / 點右邊導航)" FontWeight="Bold" Foreground="#ddd" FontSize="12"/>
+                                    </Border>
+                                    <ScrollViewer Height="150">
+                                        <ItemsControl Name="MiniTagList" Margin="5">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:CompileBindings="False">
+                                                    <Grid ColumnDefinitions="*, Auto" Margin="2">
+                                                        <!-- 左鍵：生成/隱藏 -->
+                                                        <Button Grid.Column="0" Click="SpawnTagNode_Click" Tag="{Binding Name}" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Left">
+                                                            <Grid ColumnDefinitions="25, *">
+                                                                <TextBlock Grid.Column="0" Text="{Binding Emoji}" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{Binding Color}" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                            </Grid>
+                                                        </Button>
+                                                        <!-- 右鍵：移動視角 -->
+                                                        <Button Grid.Column="1" Click="NavigateToTag_Click" Tag="{Binding Name}" Width="30" Height="30" Background="#333" ToolTip.Tip="移動視角至此">
+                                                            <TextBlock Text="🎯" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Name="SelectionPanel" IsVisible="False" Width="180" Background="#252526" CornerRadius="12" BoxShadow="0 4 20 0 #000000" BorderBrush="#444" BorderThickness="1" VerticalAlignment="Bottom">
+                                <StackPanel>
+                                    <Border Background="#444" CornerRadius="12,12,0,0" Padding="10">
+                                        <TextBlock Name="SelectedNodeText" Text="已選取: 物件" FontWeight="Bold" Foreground="#ddd" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                    </Border>
+                                    <StackPanel Margin="10" Spacing="8">
+                                        <Button Name="LinkBtn" Click="ToggleLinkMode_Click" Content="🔗 關聯 / 取消" HorizontalAlignment="Stretch" Background="#333" BorderBrush="#555" BorderThickness="1"/>
+                                        <TextBlock Text="點擊此鈕後，再點擊另一個圓圈即可連線。" TextWrapping="Wrap" FontSize="10" Foreground="#888"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- 右下角控制 -->
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Spacing="10">
-                            <Button Content="重置視圖" Click="ResetGraphView" HorizontalAlignment="Right" FontSize="11" Background="#444"/>
+                            <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+                                <Button Content="➕" Click="ZoomIn_Click" Width="40" Height="40" Background="#2563eb" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                <Button Content="➖" Click="ZoomOut_Click" Width="40" Height="40" Background="#2563eb" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+                            <Button Content="重置視圖 (Reset)" Click="ResetGraphView" HorizontalAlignment="Right" FontSize="12" Background="#444" Padding="10,5"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
