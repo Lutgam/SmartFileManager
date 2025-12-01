@@ -3,226 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧檔案管家 - 雙視圖原型</title>
+    <title>Smart File Manager (Demo)</title>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <!-- 引入 FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { margin: 0; padding: 0; background-color: #1e1e1e; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        /* 模擬桌面應用程式的質感 */
+        body { margin: 0; padding: 0; background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; }
         
-        /* 頂部切換列 */
-        .toolbar {
-            height: 50px;
-            background-color: #2d2d2d;
-            border-bottom: 1px solid #3e3e3e;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 0 20px;
+        /* 導航列 */
+        .nav-bar {
+            height: 50px; background-color: #1e1e1e; display: flex; align-items: center; padding: 0 20px; gap: 15px; border-bottom: 1px solid #333;
         }
-        
-        .view-btn {
-            background: transparent;
-            border: none;
-            color: #888;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: 0.2s;
+        .nav-btn {
+            background: transparent; border: none; color: #888; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s;
         }
-        
-        .view-btn:hover { background-color: #3d3d3d; color: #fff; }
-        .view-btn.active { background-color: #4a4a4a; color: #fff; }
+        .nav-btn:hover { background-color: #333; color: white; }
+        .nav-btn.active { background-color: #2563eb; color: white; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3); }
 
-        /* 內容容器 */
-        .container { flex: 1; position: relative; overflow: hidden; }
-
-        /* 視圖 1: 關聯圖 (Graph) */
-        #graph-view { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        /* 主內容區 */
+        .main-content { flex: 1; position: relative; overflow: hidden; }
+        #graph-view, #gallery-view { width: 100%; height: 100%; position: absolute; top: 0; left: 0; transition: opacity 0.3s; }
         
-        /* 視圖 2: 畫廊列表 (Gallery - Finder Style) */
-        #gallery-view { 
-            width: 100%; height: 100%; 
-            position: absolute; top: 0; left: 0; 
-            display: none; /* 預設隱藏 */
-            flex-direction: row;
-        }
-
-        /* Gallery 左側列表 */
-        .file-list {
-            width: 300px;
-            background-color: #252526;
-            border-right: 1px solid #3e3e3e;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
+        /* Gallery 樣式 */
+        #gallery-view { display: none; flex-direction: row; }
+        .sidebar { width: 280px; background-color: #1a1a1a; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .file-list { overflow-y: auto; flex: 1; }
+        .file-item { padding: 12px 20px; border-bottom: 1px solid #2a2a2a; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .file-item:hover { background-color: #2a2a2a; }
         
-        .file-item {
-            padding: 12px 20px;
-            border-bottom: 1px solid #2d2d2d;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: 0.2s;
-        }
-        .file-item:hover { background-color: #37373d; }
-        .file-item.selected { background-color: #094771; color: white; }
-        .file-icon { font-size: 18px; color: #a0a0a0; }
-
-        /* Gallery 右側預覽 */
-        .preview-pane {
-            flex: 1;
-            background-color: #1e1e1e;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-        
-        .preview-content {
-            background-color: white;
-            width: 80%;
-            height: 80%;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #333;
-            flex-direction: column;
-        }
-
-        .hint { position: absolute; bottom: 20px; right: 20px; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 8px; font-size: 12px; color: #ccc; pointer-events: none; z-index: 100; }
+        .preview-area { flex: 1; background-color: #121212; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .preview-card { background: #1e1e1e; border-radius: 12px; width: 80%; height: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+        .preview-header { height: 50px; background: #252525; display: flex; align-items: center; padding: 0 20px; font-weight: bold; border-bottom: 1px solid #333; }
+        .preview-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; }
     </style>
 </head>
 <body>
 
-    <!-- 頂部切換按鈕 -->
-    <div class="toolbar">
-        <button class="view-btn active" onclick="switchView('graph')">
-            <i class="fa-solid fa-circle-nodes"></i> 關聯圖 (Graph)
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="switchView('graph', this)">
+            <i class="fa-solid fa-share-nodes"></i> 關聯視圖 (Graph)
         </button>
-        <button class="view-btn" onclick="switchView('gallery')">
-            <i class="fa-solid fa-table-cells-large"></i> 畫廊列表 (Gallery)
+        <button class="nav-btn" onclick="switchView('gallery', this)">
+            <i class="fa-solid fa-images"></i> 畫廊視圖 (Gallery)
         </button>
     </div>
 
-    <div class="container">
-        <!-- 視圖 1: Anytype 風格關聯圖 -->
+    <div class="main-content">
+        <!-- 視圖 1: 關聯圖 -->
         <div id="graph-view"></div>
 
-        <!-- 視圖 2: macOS Finder 風格列表 -->
+        <!-- 視圖 2: 畫廊 -->
         <div id="gallery-view">
-            <div class="file-list">
-                <!-- 模擬檔案列表 -->
-                <div class="file-item selected" onclick="selectFile(this, 'PDF')">
-                    <i class="fa-solid fa-file-pdf file-icon"></i>
-                    <div>
-                        <div style="font-weight:bold;">專題報告.pdf</div>
-                        <div style="font-size:12px; color:#888;">#專案 #學校</div>
-                    </div>
-                </div>
-                <div class="file-item" onclick="selectFile(this, 'IMG')">
-                    <i class="fa-solid fa-file-image file-icon"></i>
-                    <div>
-                        <div style="font-weight:bold;">IMG_001.jpg</div>
-                        <div style="font-size:12px; color:#888;">#圖片 #生活</div>
-                    </div>
-                </div>
-                <div class="file-item" onclick="selectFile(this, 'DOC')">
-                    <i class="fa-solid fa-file-word file-icon"></i>
-                    <div>
-                        <div style="font-weight:bold;">合約書.docx</div>
-                        <div style="font-size:12px; color:#888;">#專案 #重要</div>
-                    </div>
+            <div class="sidebar">
+                <div class="file-list">
+                    <div style="padding:20px; color:#666; text-align:center;">等待資料載入...</div>
                 </div>
             </div>
-            
-            <div class="preview-pane">
-                <div class="preview-content">
-                    <i class="fa-solid fa-file-pdf" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>
-                    <h2>專題報告.pdf</h2>
-                    <p>PDF 內容預覽區域</p>
-                    <p style="color: gray;">(支援翻頁動畫)</p>
+            <div class="preview-area">
+                <div class="preview-card">
+                    <div class="preview-header"><span id="preview-filename">尚未選擇檔案</span></div>
+                    <div class="preview-body"><i class="fa-solid fa-eye" style="font-size:80px; margin-bottom:20px;"></i><p>點擊左側檔案檢視內容</p></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="hint" id="hint-text">💡 拖曳節點可分類，滾輪可縮放</div>
-
     <script type="text/javascript">
-        // --- 視圖切換邏輯 ---
-        function switchView(mode) {
-            const graphView = document.getElementById('graph-view');
-            const galleryView = document.getElementById('gallery-view');
-            const btns = document.querySelectorAll('.view-btn');
-            const hint = document.getElementById('hint-text');
+        // --- 1. 初始化 Vis.js (預設放幾個分類籃子) ---
+        var nodesArray = [
+            { id: 1, label: '我的桌面', group: 'hub', shape: 'dot', size: 30, color: '#2563eb' },
+            { id: 2, label: '圖片 JPG/PNG', group: 'tag', shape: 'dot', size: 20, color: '#f59e0b' },
+            { id: 3, label: '文件 PDF/DOC', group: 'tag', shape: 'dot', size: 20, color: '#ef4444' },
+            { id: 4, label: '其他檔案', group: 'tag', shape: 'dot', size: 20, color: '#10b981' }
+        ];
+        var edgesArray = [];
 
-            // 更新按鈕狀態
-            btns.forEach(b => b.classList.remove('active'));
-            
-            if (mode === 'graph') {
-                graphView.style.display = 'block';
-                galleryView.style.display = 'none';
-                btns[0].classList.add('active');
-                hint.style.display = 'block';
-            } else {
-                graphView.style.display = 'none';
-                galleryView.style.display = 'flex';
-                btns[1].classList.add('active');
-                hint.style.display = 'none';
-            }
-        }
-
-        // --- 畫廊模式：點擊檔案模擬 ---
-        function selectFile(el, type) {
-            // 移除其他選取狀態
-            document.querySelectorAll('.file-item').forEach(i => i.classList.remove('selected'));
-            el.classList.add('selected');
-            
-            // 更新右側模擬預覽
-            const previewBox = document.querySelector('.preview-content');
-            let iconHtml = '';
-            if(type === 'PDF') iconHtml = '<i class="fa-solid fa-file-pdf" style="font-size: 60px; color: #e74c3c; margin-bottom: 20px;"></i>';
-            else if(type === 'IMG') iconHtml = '<i class="fa-solid fa-image" style="font-size: 60px; color: #3498db; margin-bottom: 20px;"></i>';
-            else iconHtml = '<i class="fa-solid fa-file-word" style="font-size: 60px; color: #2980b9; margin-bottom: 20px;"></i>';
-
-            previewBox.innerHTML = `
-                ${iconHtml}
-                <h2>${el.querySelector('div div').innerText}</h2>
-                <p>AI 辨識標籤: ${el.querySelector('div div:last-child').innerText}</p>
-            `;
-        }
-
-        // --- Vis.js 關聯圖設定 (保持不變) ---
-        var nodes = new vis.DataSet([
-            { id: 1, label: '專案 Projects', group: 'tag', shape: 'dot', size: 25, color: '#eab308' },
-            { id: 2, label: '學校 School', group: 'tag', shape: 'dot', size: 20, color: '#3b82f6' },
-            { id: 3, label: '圖片 Images', group: 'tag', shape: 'dot', size: 20, color: '#ef4444' },
-            { id: 101, label: '專題報告.pdf', group: 'file' },
-            { id: 102, label: 'IMG_001.jpg', group: 'file' },
-            { id: 103, label: '合約書.docx', group: 'file' }
-        ]);
-        var edges = new vis.DataSet([
-            { from: 101, to: 1 }, { from: 101, to: 2 }, { from: 102, to: 3 }, { from: 103, to: 1 }
-        ]);
+        var nodes = new vis.DataSet(nodesArray);
+        var edges = new vis.DataSet(edgesArray);
         var container = document.getElementById('graph-view');
         var data = { nodes: nodes, edges: edges };
         var options = {
-            nodes: { shape: 'dot', font: { color: '#ffffff' } },
-            physics: { enabled: true, barnesHut: { gravitationalConstant: -2000, springLength: 95 } }
+            nodes: { font: { color: '#fff' }, borderWidth: 0 },
+            physics: { stabilization: false, barnesHut: { gravitationalConstant: -3000 } },
+            interaction: { hover: true }
         };
         var network = new vis.Network(container, data, options);
+
+        // --- 2. C# 呼叫這個函式傳資料進來 ---
+        function updateDataFromCSharp(realFiles) {
+            console.log("收到檔案數據:", realFiles);
+            
+            // 清空舊的檔案節點 (保留 id < 100 的標籤)
+            var oldFiles = nodes.get({ filter: function (item) { return item.id >= 100; } });
+            nodes.remove(oldFiles);
+            edges.clear();
+
+            // 更新左側列表 DOM
+            const listContainer = document.querySelector('.file-list');
+            listContainer.innerHTML = ''; 
+
+            realFiles.forEach(function(file) {
+                // A. 新增到 Graph View
+                nodes.add({ id: file.id, label: file.label, group: 'file', shape: 'dot', color: '#97c2fc' });
+                
+                // 簡單分類連線邏輯
+                let targetTagId = 4; // 其他
+                let lowerName = file.label.toLowerCase();
+                if (lowerName.endsWith('.jpg') || lowerName.endsWith('.png')) targetTagId = 2;
+                else if (lowerName.endsWith('.pdf') || lowerName.endsWith('.doc') || lowerName.endsWith('.docx')) targetTagId = 3;
+
+                edges.add({ from: file.id, to: 1 }); // 連到桌面
+                edges.add({ from: file.id, to: targetTagId }); // 連到分類
+
+                // B. 新增到 Gallery List
+                let iconClass = "fa-file";
+                let iconColor = "#aaa";
+                if(targetTagId == 2) { iconClass = "fa-file-image"; iconColor = "#f39c12"; }
+                if(targetTagId == 3) { iconClass = "fa-file-pdf"; iconColor = "#e74c3c"; }
+
+                let itemHtml = `
+                    <div class="file-item" onclick="document.getElementById('preview-filename').innerText='${file.label}'">
+                        <i class="fa-solid ${iconClass}" style="color: ${iconColor}"></i>
+                        <div style="font-weight:bold; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:180px;">${file.label}</div>
+                    </div>`;
+                listContainer.innerHTML += itemHtml;
+            });
+        }
+
+        // --- 3. 切換視圖 ---
+        function switchView(mode, btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if(mode === 'graph') {
+                document.getElementById('graph-view').style.display = 'block';
+                document.getElementById('gallery-view').style.display = 'none';
+            } else {
+                document.getElementById('graph-view').style.display = 'none';
+                document.getElementById('gallery-view').style.display = 'flex';
+            }
+        }
     </script>
 </body>
 </html>

@@ -2,49 +2,270 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
         x:Class="App.MainWindow"
-        Title="Smart File Manager (Native Version)"
+        Title="Smart File Manager - Pro v0.9.1 Fixed" 
         Background="#1e1e1e"
         TransparencyLevelHint="AcrylicBlur"
         ExtendClientAreaToDecorationsHint="True">
 
-    <Grid ColumnDefinitions="300, *" RowDefinitions="50, *">
-        <!-- 頂部標題列 -->
-        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#252526" BorderBrush="#333" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0">
-                <TextBlock Text="📂 智慧檔案管家 (C# 原生核心版)" Foreground="White" FontWeight="Bold" FontSize="16"/>
-            </StackPanel>
-        </Border>
-
-        <!-- 左側檔案列表 -->
-        <Border Grid.Row="1" Grid.Column="0" Background="#2d2d30" BorderBrush="#333" BorderThickness="0,0,1,0">
-            <DockPanel>
-                <TextBlock Text="桌面檔案列表" Foreground="#aaa" Margin="10" DockPanel.Dock="Top" FontSize="12"/>
-                <ListBox Name="FileListBox" Background="Transparent" SelectionChanged="OnFileSelected">
-                    <ListBox.ItemTemplate>
-                        <!-- 關鍵修正：加入 x:CompileBindings="False" 讓它不要檢查型別 -->
-                        <DataTemplate x:CompileBindings="False">
-                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5">
-                                <TextBlock Text="📄" FontSize="16"/>
-                                <TextBlock Text="{Binding Name}" Foreground="White" VerticalAlignment="Center"/>
+    <Grid>
+        <Grid RowDefinitions="60, *">
+            <!-- 頂部功能列 -->
+            <Border Grid.Row="0" Background="#252526" BorderBrush="#333" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto, *, Auto" Margin="15,0">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
+                        <StackPanel>
+                            <TextBlock Text="📂 智慧檔案管家" Foreground="White" FontWeight="Bold" FontSize="16"/>
+                            <TextBlock Text="v0.9.1 Final Fix" Foreground="#666" FontSize="10"/>
+                        </StackPanel>
+                        <Button Name="SelectFolderBtn" Click="SelectFolder_Click" Background="#333" BorderBrush="#444" CornerRadius="5" Padding="10,5">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="📂" />
+                                <TextBlock Name="CurrentPathText" Text="桌面 (Desktop)" Foreground="#ddd" MaxWidth="200" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
-        </Border>
+                        </Button>
+                    </StackPanel>
 
-        <!-- 右側預覽區 -->
-        <Grid Grid.Row="1" Grid.Column="1" Background="#1e1e1e">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
-                <!-- 圖片預覽框 -->
-                <Border CornerRadius="8" ClipToBounds="True" BoxShadow="0 10 30 0 #000000">
-                    <Image Name="PreviewImage" Height="400" Stretch="Uniform"/>
-                </Border>
-                <!-- 文字資訊 -->
-                <TextBlock Name="InfoText" Text="請從左側選擇一個圖片檔案 (.jpg / .png)" Foreground="#888" HorizontalAlignment="Center"/>
-            </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Button Click="AiTrash_Click" Background="#2d2d30" BorderBrush="#cc4444" BorderThickness="1" CornerRadius="20" Padding="15,8">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="🗑️"/>
+                                <TextBlock Text="AI 垃圾桶" Foreground="#ff6b6b" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="AiOrganize_Click" Background="#2563eb" CornerRadius="20" Padding="15,8">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="✨"/>
+                                <TextBlock Text="AI 一鍵整理" Foreground="White" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 主內容分頁 -->
+            <TabControl Grid.Row="1" Margin="0" Background="#1e1e1e" SelectionChanged="OnTabChanged">
+                
+                <!-- 1. 檔案列表 (主視圖) -->
+                <TabItem Header="📋 檔案列表" FontSize="14" FontWeight="Bold">
+                    <Grid ColumnDefinitions="320, *">
+                        <!-- 左側列表 -->
+                        <Border Grid.Column="0" Background="#2d2d30" BorderBrush="#333" BorderThickness="0,0,1,0">
+                            <DockPanel>
+                                <TextBlock Text="檔案清單" Foreground="#aaa" Margin="15,10" DockPanel.Dock="Top" FontSize="12" FontWeight="Bold"/>
+                                <ListBox Name="FileListBox" Background="Transparent" SelectionChanged="OnFileSelected">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:CompileBindings="False">
+                                            <Grid ColumnDefinitions="30, *" Margin="0,5">
+                                                <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20" VerticalAlignment="Center"/>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+                                                    <ItemsControl ItemsSource="{Binding Tags}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="{Binding Color}" CornerRadius="3" Padding="4,1" Margin="0,2,2,0">
+                                                                    <TextBlock Text="{Binding Name}" FontSize="9" Foreground="White"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- 右側預覽區 -->
+                        <Grid Grid.Column="1" Background="#1e1e1e">
+                            <Border Margin="20" CornerRadius="8" Background="#252526" BoxShadow="0 4 20 0 #000000">
+                                <Grid RowDefinitions="*, Auto">
+                                    <Grid Grid.Row="0">
+                                        <Image Name="PreviewImage" Stretch="Uniform" IsVisible="False"/>
+                                        <ScrollViewer Name="PreviewTextScroll" IsVisible="False">
+                                            <TextBlock Name="PreviewText" Foreground="#d4d4d4" FontFamily="Menlo, Consolas, monospace" FontSize="14" Margin="20" TextWrapping="Wrap"/>
+                                        </ScrollViewer>
+                                        <StackPanel Name="InfoPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
+                                            <TextBlock Name="InfoIcon" Text="👁️" FontSize="48" HorizontalAlignment="Center"/>
+                                            <TextBlock Name="InfoText" Text="請選擇檔案" Foreground="#666" FontSize="16"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Border Grid.Row="1" Background="#2d2d30" Padding="15" CornerRadius="0,0,8,8">
+                                        <StackPanel Spacing="10">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="🏷️ 標籤:" VerticalAlignment="Center" Foreground="#aaa" Margin="0,0,5,0"/>
+                                                
+                                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" MaxWidth="500">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                                        <ItemsControl Name="QuickTagList">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="5"/>
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:CompileBindings="False">
+                                                                    <Button Click="QuickTag_Click" Tag="{Binding Name}" FontSize="12" Background="#333" BorderBrush="{Binding Color}" BorderThickness="0,0,0,2">
+                                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                            <TextBlock Text="{Binding Emoji}"/>
+                                                                            <TextBlock Text="{Binding Name}"/>
+                                                                        </StackPanel>
+                                                                    </Button>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        
+                                                        <Button Content="➕" Click="ShowCustomTagDialog" FontSize="12" Background="#333" BorderBrush="#555" BorderThickness="1"/>
+                                                    </StackPanel>
+                                                </ScrollViewer>
+                                            </StackPanel>
+                                            
+                                            <Button Name="OpenExternalBtn" Click="OpenExternal_Click" HorizontalAlignment="Stretch" Background="#3a3a3a" IsVisible="False">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                                                    <TextBlock Text="↗️" />
+                                                    <TextBlock Text="使用系統預設程式開啟" FontWeight="Bold"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- 2. 標籤管理 -->
+                <TabItem Header="🏷️ 標籤管理" FontSize="14" FontWeight="Bold">
+                    <Grid Background="#121212">
+                        <Grid Name="TagDashboardView" RowDefinitions="50, *">
+                            <Border Grid.Row="0" Background="#1a1a1a" Padding="20,0">
+                                <TextBlock Text="所有標籤 (點擊卡片查看檔案)" VerticalAlignment="Center" FontWeight="Bold" Foreground="#aaa"/>
+                            </Border>
+                            <ScrollViewer Grid.Row="1">
+                                <WrapPanel Name="TagDashboardPanel" Margin="20" ItemWidth="200" ItemHeight="100"/>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <Grid Name="TagDetailView" RowDefinitions="50, *" IsVisible="False" Background="#121212">
+                            <Border Grid.Row="0" Background="#252526" Padding="10,0" BorderBrush="#333" BorderThickness="0,0,0,1">
+                                <StackPanel Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
+                                    <Button Click="BackToTagDashboard" Background="Transparent" Foreground="#aaa">
+                                        <TextBlock Text="⬅️ 返回總覽" FontWeight="Bold"/>
+                                    </Button>
+                                    <TextBlock Name="TagDetailTitle" Text="標籤詳情" FontWeight="Bold" Foreground="White" FontSize="16"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <Grid Grid.Row="1" ColumnDefinitions="300, *">
+                                <Border Grid.Column="0" Background="#2d2d30" BorderBrush="#333" BorderThickness="0,0,1,0">
+                                    <ListBox Name="TagDetailListBox" Background="Transparent" SelectionChanged="OnDetailFileSelected">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:CompileBindings="False">
+                                                <Grid ColumnDefinitions="30, *" Margin="0,5">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White" VerticalAlignment="Center" FontWeight="Medium"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                                
+                                <Grid Grid.Column="1" Background="#1e1e1e">
+                                    <Border Margin="20" CornerRadius="8" Background="#252526" BoxShadow="0 4 20 0 #000000">
+                                        <Grid>
+                                            <Image Name="DetailPreviewImage" Stretch="Uniform" IsVisible="False"/>
+                                            <ScrollViewer Name="DetailPreviewTextScroll" IsVisible="False">
+                                                <TextBlock Name="DetailPreviewText" Foreground="#d4d4d4" FontFamily="Menlo, Consolas, monospace" FontSize="14" Margin="20" TextWrapping="Wrap"/>
+                                            </ScrollViewer>
+                                            <StackPanel Name="DetailInfoPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
+                                                <TextBlock Text="👁️" FontSize="48" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="檢視模式 (無法修改標籤)" Foreground="#666" FontSize="16"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- 3. 關聯視圖 (修正：移除 Transforms 的 x:Name) -->
+                <TabItem Header="🕸️ 關聯視圖" FontSize="14" FontWeight="Bold">
+                    <Grid>
+                        <Border Background="#121212" ClipToBounds="True" PointerWheelChanged="OnGraphScroll" PointerPressed="OnGraphContainerPressed" PointerMoved="OnGraphContainerMoved" PointerReleased="OnGraphContainerReleased">
+                            <!-- 變形容器 -->
+                            <Panel Name="GraphContainer" Background="Transparent">
+                                <Panel.RenderTransform>
+                                    <!-- 修正重點：這裡不要給名字，因為編譯器可能會報錯 -->
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                        <TranslateTransform X="0" Y="0" />
+                                    </TransformGroup>
+                                </Panel.RenderTransform>
+                                <Canvas Name="GraphCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Width="5000" Height="5000"/>
+                            </Panel>
+                        </Border>
+                        
+                        <!-- 迷你標籤視窗 -->
+                        <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20" Width="220" Background="#252526" CornerRadius="12" BoxShadow="0 4 20 0 #000000" BorderBrush="#444" BorderThickness="1">
+                            <StackPanel>
+                                <Border Background="#333" CornerRadius="12,12,0,0" Padding="10">
+                                    <TextBlock Text="🏷️ 標籤庫 (點擊生成節點)" FontWeight="Bold" Foreground="#ddd" FontSize="12"/>
+                                </Border>
+                                <ScrollViewer Height="150">
+                                    <ItemsControl Name="MiniTagList" Margin="5">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:CompileBindings="False">
+                                                <Button Click="SpawnTagNode_Click" Tag="{Binding Name}" Margin="2" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0">
+                                                    <Grid ColumnDefinitions="30, *">
+                                                        <TextBlock Grid.Column="0" Text="{Binding Emoji}" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{Binding Color}" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Spacing="10">
+                            <Button Content="重置視圖" Click="ResetGraphView" HorizontalAlignment="Right" FontSize="11" Background="#444"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <!-- 自訂標籤彈出視窗 -->
+        <Grid Name="CustomTagOverlay" IsVisible="False" Background="#AA000000">
+            <Border Width="400" Height="300" Background="#252526" CornerRadius="12" BoxShadow="0 10 40 0 #000000" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+                    <TextBlock Text="➕ 新增自訂標籤" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    <StackPanel Grid.Row="1" Spacing="15" VerticalAlignment="Center">
+                        <StackPanel>
+                            <TextBlock Text="標籤名稱" Foreground="#aaa" Margin="0,0,0,5"/>
+                            <TextBox Name="TagNameInput" Watermark="例如：重要專案" Background="#333" Foreground="White" BorderThickness="0"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="選擇顏色" Foreground="#aaa" Margin="0,0,0,5"/>
+                            <WrapPanel Name="ColorPickerPanel" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                        <Button Content="取消" Click="CloseTagDialog" Background="Transparent" Foreground="#aaa"/>
+                        <Button Content="確認新增" Click="ConfirmAddTag" Background="#2563eb" Foreground="White" FontWeight="Bold"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </Window>
