@@ -820,8 +820,8 @@ public partial class MainWindow : Window
         double targetX = targetCenter?.X ?? (CANVAS_CENTER_X + NODE_PANEL_WIDTH / 2);
         double targetY = targetCenter?.Y ?? (CANVAS_CENTER_Y + CENTER_NODE_SIZE / 2);
 
-        double finalTransX = (viewWidth / 2) - targetX;
-        double finalTransY = (viewHeight / 2) - targetY;
+        double finalTransX = (viewWidth / 2) - targetX + 2000 ;
+        double finalTransY = (viewHeight / 2) - targetY + 2200 ;
 
         _graphScale.ScaleX = 1;
         _graphScale.ScaleY = 1;
